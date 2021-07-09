@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 @IBDesignable open class AttributedLabel: UIView {
-
+    
     open override func prepareForInterfaceBuilder() {
         super.prepareForInterfaceBuilder()
         let gray = Style("gray").foregroundColor(.gray)
@@ -19,22 +19,39 @@ import UIKit
     }
     
     //MARK: - private properties
-    private let textView = UITextView()
+    private let textView = ReadMoreTextView()
     private var detectionAreaButtons = [DetectionAreaButton]()
     
     //MARK: - public properties
+    
+    /**The attributed text to trim the original text. Setting this property resets `readMoreText`.*/
+    public var attributedReadMoreText: NSAttributedString? {
+        didSet {
+            textView.attributedReadMoreText = attributedReadMoreText
+            setNeedsLayout()
+        }
+    }
+    
+    public var maximumNumberOfLines: Int = 0 {
+        didSet {
+            textView.maximumNumberOfLines = maximumNumberOfLines
+            setNeedsLayout()
+        }
+    }
+    
     open var onClick: ((AttributedLabel, Detection)->Void)?
-
+    open var onClickOnReadMore: (() -> Void)?
+    
     open func rects(for detection: Detection) -> [CGRect] {
         var result = [CGRect]()
-
+        
         if let attributedText = state.attributedText {
             let nsrange = NSRange(detection.range, in: attributedText.string)
             textView.layoutManager.enumerateEnclosingRects(forGlyphRange: nsrange, withinSelectedGlyphRange: NSRange(location: NSNotFound, length: 0), in: textView.textContainer, using: { (rect, stop) in
                 result.append(rect)
             })
         }
-
+        
         return result
     }
     
@@ -61,6 +78,7 @@ import UIKit
     open var attributedText: AttributedText? {
         set {
             state = State(attributedText: newValue, isEnabled: state.isEnabled, detection: nil)
+            textView.layoutSubviews()
             setNeedsLayout()
         }
         get {
@@ -102,7 +120,7 @@ import UIKit
         } else {
             return .black
         }
-        }() {
+    }() {
         didSet {
             updateText()
         }
@@ -142,7 +160,7 @@ import UIKit
         
         lineBreakMode = .byTruncatingTail
         numberOfLines = 1
-
+        
         textView.isUserInteractionEnabled = false
         textView.textContainer.lineFragmentPadding = 0;
         textView.textContainerInset = .zero;
@@ -152,7 +170,10 @@ import UIKit
         textView.backgroundColor = nil
         
         textView.translatesAutoresizingMaskIntoConstraints = false
-        
+        textView.shouldTrim = true
+        self.textView.onClickOnReadMore = {
+            self.onClickOnReadMore?()
+        }
         textView.topAnchor.constraint(equalTo: topAnchor).isActive = true
         textView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
         textView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
@@ -180,6 +201,8 @@ import UIKit
                 })
             }
         }
+        
+        textView.layoutSubviews()
     }
     
     open override func sizeThatFits(_ size: CGSize) -> CGSize {
@@ -243,6 +266,7 @@ import UIKit
     
     @objc private func handleDetectionAreaButtonClick(_ sender: DetectionAreaButton) {
         onClick?(self, sender.detection)
+        textView.layoutSubviews()
     }
     
     //MARK: - state
@@ -306,7 +330,6 @@ import UIKit
     
     private func updateText() {
         if let attributedText = state.attributedText {
-            
             if let detection = state.detection {
                 let higlightedAttributedString = NSMutableAttributedString(attributedString: attributedText.attributedString)
                 higlightedAttributedString.addAttributes(detection.style.highlightedAttributes, range: NSRange(detection.range, in: attributedText.string))
@@ -321,6 +344,7 @@ import UIKit
         } else {
             textView.attributedText = nil
         }
+        textView.layoutSubviews()
     }
 }
 
