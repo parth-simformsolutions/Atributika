@@ -189,7 +189,7 @@ import UIKit
         }
         
         detectionAreaButtons.removeAll()
-        
+        textView.attributedText = state.attributedText?.attributedString
         if let attributedText = state.attributedText {
             
             let highlightableDetections = attributedText.detections.filter { $0.style.typedAttributes[.highlighted] != nil }
@@ -202,7 +202,6 @@ import UIKit
             }
         }
         
-        textView.layoutSubviews()
     }
     
     open override func sizeThatFits(_ size: CGSize) -> CGSize {
