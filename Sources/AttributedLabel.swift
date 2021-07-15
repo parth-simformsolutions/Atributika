@@ -268,6 +268,20 @@ import UIKit
         textView.layoutSubviews()
     }
     
+    public override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        guard textView.pointIsInReadMoreOrReadLessTextRange(point: point) == nil else { return self }
+        return super.hitTest(point, with: event)
+    }
+
+    public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let point = touches.first?.location(in: self) {
+            if textView.pointIsInReadMoreOrReadLessTextRange(point: point) != nil {
+                onClickOnReadMore?()
+            }
+        }
+        super.touchesEnded(touches, with: event)
+    }
+    
     //MARK: - state
     
     private struct State {

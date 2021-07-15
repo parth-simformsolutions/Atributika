@@ -224,25 +224,7 @@ public class ReadMoreTextView: UITextView {
     private func needsTrim() -> Bool {
         return shouldTrim && readMoreText != nil
     }
-    
-    public override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        return hitTest(pointInGliphRange: point, event: event) { _ in
-            guard pointIsInReadMoreOrReadLessTextRange(point: point) != nil else { return self }
-            return self
-        }
-    }
 
-    public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let point = touches.first?.location(in: self) {
-            // TODO: Enable this if we want auto expand textfield
-            //shouldTrim = pointIsInReadMoreOrReadLessTextRange(point: point) ?? shouldTrim
-            if pointIsInReadMoreOrReadLessTextRange(point: point) != nil {
-                onClickOnReadMore?()
-            }
-        }
-        super.touchesEnded(touches, with: event)
-    }
-    
     private func showLessText() {
         if let readMoreText = readMoreText, text.hasSuffix(readMoreText) { return }
         
@@ -363,7 +345,7 @@ public class ReadMoreTextView: UITextView {
         return NSRange(location: _originalTextLength, length: readLessText!.length + 1)
     }
     
-    private func pointIsInReadMoreOrReadLessTextRange(point aPoint: CGPoint) -> Bool? {
+    func pointIsInReadMoreOrReadLessTextRange(point aPoint: CGPoint) -> Bool? {
         if needsTrim() && pointIsInTextRange(point: aPoint, range: readMoreTextRange(), padding: readMoreTextPadding) {
             return false
         } else if readLessText != nil && pointIsInTextRange(point: aPoint, range: readLessTextRange(), padding: readLessTextPadding) {
