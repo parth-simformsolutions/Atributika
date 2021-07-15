@@ -300,7 +300,8 @@ public class ReadMoreTextView: UITextView {
             return NSMakeRange(NSNotFound, 0)
         }
         else {
-            let lastCharacterIndex = characterIndexBeforeTrim(range: rangeThatFitsContainer)
+            /// Get Last CharacterIndex support with New line and "\t"
+            let lastCharacterIndex =  NSMaxRange(rangeThatFitsContainer) - (readMoreText?.length ?? 0)
             if lastCharacterIndex > 0 {
                 return NSMakeRange(lastCharacterIndex, textStorage.string.length - lastCharacterIndex)
             }
